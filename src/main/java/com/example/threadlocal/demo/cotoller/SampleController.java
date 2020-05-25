@@ -18,7 +18,6 @@ import java.util.UUID;
 public class SampleController {
 
 
-
     private final SampleBusinessRule sampleBusinessRule;
     Logger log = LoggerFactory.getLogger(SampleController.class);
 
@@ -39,15 +38,14 @@ public class SampleController {
                 .getListOfCollections(Thread.currentThread().getName()));
     }
 
-    @GetMapping(name = "m1", value = "thread-local",produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(name = "m3", value = "thread-local", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> checkThreadLocalFunctionality() {
         String accessToken = UUID.randomUUID().toString();
-        log.info("setting access token {} on thread {}",accessToken,Thread.currentThread().getName());
+        log.info("setting access token {} on thread {}", accessToken, Thread.currentThread().getName());
         AccessTokenContext.setCurrentAccessToken(accessToken);
         sampleBusinessRule.verifyAccessTokenThreadLocalContext(accessToken);
         return ResponseEntity.ok("access token matched");
     }
-
 
 
 }

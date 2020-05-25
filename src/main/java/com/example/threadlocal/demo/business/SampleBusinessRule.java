@@ -1,6 +1,5 @@
 package com.example.threadlocal.demo.business;
 
-import com.example.threadlocal.demo.cotoller.SampleController;
 import com.example.threadlocal.demo.service.AccessTokenContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +10,7 @@ import org.springframework.util.Assert;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,7 +25,8 @@ public class SampleBusinessRule {
     }
 
     public Set<String> getListOfCollections(String threadName) {
-        log.info("executing on thread {}", Thread.currentThread().getName());
+        log.info("executing on thread {} invoked from thread {}",
+                Thread.currentThread().getName(),threadName);
         try {
             return mongoTemplate.getCollectionNames();
         } catch (Exception e) {
@@ -42,11 +43,23 @@ public class SampleBusinessRule {
     }
 
 
-    public void verifyAccessTokenThreadLocalContext(String accessToken){
+    public void verifyAccessTokenThreadLocalContext(String accessToken) {
+        mockIOOperations();
         String token = AccessTokenContext.getCurrentAccessToken();
-        log.info("processing access token {} on thread {}",token,Thread.currentThread().getName());
-        Assert.isTrue(accessToken.equals(token),"ThreadLocal is not working as expected");
+        log.info("processing access token {} on thread {}", token, Thread.currentThread().getName());
+        Assert.isTrue(accessToken.equals(token), "ThreadLocal is not working as expected");
         AccessTokenContext.removeAccessTokenContext();
+    }
+
+    private void mockIOOperations() {
+        int sleepFor = ThreadLocalRandom.current().nextInt(5, 10)*1000;
+        log.info("Sleeping for {} seconds", sleepFor);
+        try {
+            Thread.sleep(sleepFor);
+        } catch (InterruptedException e) {
+            log.error("error while mocking IO operations", e);
+            Thread.currentThread().interrupt();
+        }
     }
 
 

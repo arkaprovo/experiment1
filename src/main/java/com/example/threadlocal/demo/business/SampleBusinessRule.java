@@ -5,10 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -44,23 +46,32 @@ public class SampleBusinessRule {
 
 
     public void verifyAccessTokenThreadLocalContext(String accessToken) {
-        mockIOOperations();
+        mockIOOperations(0);
         String token = AccessTokenContext.getCurrentAccessToken();
         log.info("processing access token {} on thread {}", token, Thread.currentThread().getName());
         Assert.isTrue(accessToken.equals(token), "ThreadLocal is not working as expected");
         AccessTokenContext.removeAccessTokenContext();
     }
 
-    private void mockIOOperations() {
-        int sleepFor = ThreadLocalRandom.current().nextInt(5, 10)*1000;
-        log.info("Sleeping for {} seconds", sleepFor);
+    private void mockIOOperations(int delay) {
+        int sleepFor = delay==0?ThreadLocalRandom.current().nextInt(5, 10)*1000:delay;
+        log.info("Sleeping for {} seconds", sleepFor/1000);
         try {
-            Thread.sleep(sleepFor);
+            Thread.sleep(delay);
         } catch (InterruptedException e) {
             log.error("error while mocking IO operations", e);
             Thread.currentThread().interrupt();
         }
     }
 
+    @Async
+    public void verifyAccessTokenAsyncThreadLocalContext(String accessToken) {
+        mockIOOperations(10000);
+        String token = AccessTokenContext.getCurrentAccessToken();
+        log.info("processing access token {} on thread {}", token, Thread.currentThread().getName());
+        //Assert.isTrue(Objects.isNull(token), "ThreadLocal is not working as expected");
+        AccessTokenContext.removeAccessTokenContext();
+
+    }
 
 }

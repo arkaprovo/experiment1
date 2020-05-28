@@ -47,5 +47,14 @@ public class SampleController {
         return ResponseEntity.ok("access token matched");
     }
 
+    @GetMapping(name = "m4", value = "thread-local-async", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> checkThreadLocalAsyncFunctionality() {
+        String accessToken = UUID.randomUUID().toString();
+        log.info("setting access token {} on thread {}", accessToken, Thread.currentThread().getName());
+        AccessTokenContext.setCurrentAccessToken(accessToken);
+        sampleBusinessRule.verifyAccessTokenAsyncThreadLocalContext(accessToken);
+        return ResponseEntity.ok("access token matched");
+    }
+
 
 }

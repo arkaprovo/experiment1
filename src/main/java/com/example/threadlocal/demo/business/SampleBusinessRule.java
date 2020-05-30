@@ -64,14 +64,24 @@ public class SampleBusinessRule {
         }
     }
 
-    @Async
+    @Async("simple")
+    public void verifyAccessTokenSimpleAsyncThreadLocalContext() {
+        mockIOOperations(10000);
+        String token = AccessTokenContext.getCurrentAccessToken();
+        log.info("processing access token {} on thread {}", token, Thread.currentThread().getName());
+        Assert.isTrue(token.isEmpty(),"something went wrong");
+        AccessTokenContext.removeAccessTokenContext();
+    }
+
+    @Async("threadAware")
     public void verifyAccessTokenAsyncThreadLocalContext(String accessToken) {
         mockIOOperations(10000);
         String token = AccessTokenContext.getCurrentAccessToken();
         log.info("processing access token {} on thread {}", token, Thread.currentThread().getName());
-        //Assert.isTrue(Objects.isNull(token), "ThreadLocal is not working as expected");
+        Assert.isTrue(accessToken.equals(token),"something went wrong, debug");
         AccessTokenContext.removeAccessTokenContext();
-
     }
+
+
 
 }
